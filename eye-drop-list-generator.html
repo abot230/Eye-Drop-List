@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Drop Instructions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; font-size: 28px; }
+        .main-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .section { background-color: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; }
+        .section h2 { color: #3498db; margin-bottom: 12px; font-size: 16px; }
+        .section h3 { margin-top: 8px; margin-bottom: 6px; font-size: 13px; }
+        .medication-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+        .med-btn { padding: 8px 6px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; transition: all 0.3s; }
+        .med-btn:hover { background-color: #2980b9; transform: translateY(-2px); }
+        .med-btn.active { background-color: #27ae60; }
+        .patient-inputs { display: flex; flex-direction: column; gap: 10px; }
+        .patient-inputs input { padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .custom-med { display: flex; gap: 10px; margin-top: 15px; }
+        .custom-med input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .action-btns button { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .clear-btn { background-color: #e74c3c; color: white; }
+        .copy-btn { background-color: #27ae60; color: white; }
+        .instructions-box { background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 5px; }
+        .instructions-box h3 { color: #2c3e50; margin-bottom: 10px; font-size: 16px; }
+        .instructions-box ol { margin-left: 20px; }
+        .instructions-box li { margin: 5px 0; }
+        .output-section { margin-top: 30px; }
+        .output-section h2 { color: #2c3e50; margin-bottom: 15px; font-size: 20px; }
+        .patient-info-display { background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        .patient-info-display p { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table th, table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        table th { background-color: #3498db; color: white; font-weight: bold; }
+        table td[contenteditable="true"] { cursor: text; }
+        table td[contenteditable="true"]:hover { background-color: #f0f8ff; }
+        table td[contenteditable="true"]:focus { outline: 2px solid #3498db; background-color: #fff; }
+        .delete-btn { padding: 8px 12px; background-color: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .delete-btn:hover { background-color: #c0392b; }
+        .empty-message { text-align: center; padding: 40px; color: #999; font-style: italic; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 500px; width: 90%; }
+        .modal-header { margin-bottom: 20px; }
+        .modal-header h2 { color: #2c3e50; margin-bottom: 10px; font-size: 20px; }
+        .modal-header .selected-med { color: #3498db; font-weight: bold; font-size: 18px; }
+        .modal-section { margin-bottom: 25px; }
+        .modal-section h3 { color: #2c3e50; margin-bottom: 10px; font-size: 16px; }
+        .modal-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .modal-buttons.freq { grid-template-columns: repeat(2, 1fr); }
+        .modal-close { background-color: #95a5a6; margin-top: 15px; width: 100%; }
+        .modal-close:hover { background-color: #7f8c8d; }
+        @media print {
+            * { box-shadow: none !important; border-radius: 0 !important; }
+            body { background-color: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; padding: 0; margin: 0; border-radius: 0; border: none; background-color: white; }
+            h1 { font-size: 24px; margin-bottom: 20px; margin-left: 0; padding-left: 0; }
+            .main-sections, .instructions-box, .action-btns, .delete-btn, .modal-overlay { display: none !important; }
+            .section { display: none !important; }
+            .output-section { margin-top: 0; margin-left: 0; padding-left: 0; }
+            .output-section h2 { font-size: 18px; margin-bottom: 10px; margin-left: 0; padding-left: 0; }
+            .patient-info-display { background-color: white; border: none; padding: 10px 0; margin-bottom: 15px; margin-left: 0; border-radius: 0; }
+            table { page-break-inside: avoid; border: 1px solid #000; margin-left: 0; }
+            table th, table td { border: 1px solid #000; padding: 8px; }
+            table th { background-color: #f0f0f0 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            table th:last-child, table td:last-child { display: none; }
+            button { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Eye Drop Instructions</h1>
+        
+        <div class="main-sections">
+            <div class="section">
+                <h2>Select Medication by Category</h2>
+                
+                <h3 style="color: #e74c3c;">Steroids</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Prednisolone Acetate 1%">Prednisolone 1%</button>
+                    <button class="med-btn" data-med="Difluprednate 0.05%">Difluprednate</button>
+                    <button class="med-btn" data-med="Loteprednol 0.5%">Loteprednol</button>
+                </div>
+                
+                <h3 style="color: #e67e22;">NSAIDs</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Ketorolac 0.5%">Ketorolac</button>
+                    <button class="med-btn" data-med="Bromfenac 0.07%">Bromfenac</button>
+                    <button class="med-btn" data-med="Nepafenac 0.1%">Nepafenac</button>
+                </div>
+                
+                <h3 style="color: #3498db;">Antibiotics</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Moxifloxacin 0.5%">Moxifloxacin</button>
+                    <button class="med-btn" data-med="Ofloxacin 0.3%">Ofloxacin</button>
+                    <button class="med-btn" data-med="Polymyxin B/Trimethoprim">Polymyxin/Trim</button>
+                    <button class="med-btn" data-med="Tobramycin/Dexamethasone Drops">Tobradex Drops</button>
+                    <button class="med-btn" data-med="Tobramycin/Dexamethasone Ointment">Tobradex Ointment</button>
+                    <button class="med-btn" data-med="Neomycin/Polymyxin B/Dexamethasone Drops">Maxitrol Drops</button>
+                    <button class="med-btn" data-med="Neomycin/Polymyxin B/Dexamethasone Ointment">Maxitrol Ointment</button>
+                </div>
+                
+                <h3 style="color: #27ae60;">Glaucoma - Prostaglandins</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Latanoprost 0.005%">Latanoprost</button>
+                    <button class="med-btn" data-med="Bimatoprost 0.01%">Bimatoprost</button>
+                    <button class="med-btn" data-med="Travoprost 0.004%">Travoprost</button>
+                    <button class="med-btn" data-med="Vyzulta">Vyzulta</button>
+                    <button class="med-btn" data-med="Rhopressa">Rhopressa</button>
+                </div>
+                
+                <h3 style="color: #16a085;">Glaucoma - Beta Blockers</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Timolol 0.5%">Timolol 0.5%</button>
+                    <button class="med-btn" data-med="Timolol 0.25%">Timolol 0.25%</button>
+                </div>
+                
+                <h3 style="color: #2ecc71;">Glaucoma - Alpha Agonists</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Brimonidine 0.1%">Brimonidine 0.1%</button>
+                    <button class="med-btn" data-med="Brimonidine 0.15%">Brimonidine 0.15%</button>
+                    <button class="med-btn" data-med="Brimonidine 0.2%">Brimonidine 0.2%</button>
+                </div>
+                
+                <h3 style="color: #1abc9c;">Glaucoma - CAI</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Dorzolamide 2%">Dorzolamide</button>
+                    <button class="med-btn" data-med="Brinzolamide 1%">Brinzolamide</button>
+                </div>
+                
+                <h3 style="color: #9b59b6;">Glaucoma - Combos</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Dorzolamide/Timolol">Dorz/Timolol</button>
+                    <button class="med-btn" data-med="Brimonidine/Timolol">Brim/Timolol</button>
+                    <button class="med-btn" data-med="Simbrinza">Simbrinza</button>
+                    <button class="med-btn" data-med="Rocklatan">Rocklatan</button>
+                </div>
+                
+                <h3 style="color: #f39c12;">Dry Eye</h3>
+                <div class="medication-grid">
+                    <button class="med-btn" data-med="Artificial Tears">Artificial Tears</button>
+                    <button class="med-btn" data-med="Xiidra">Xiidra</button>
+                    <button class="med-btn" data-med="Restasis">Restasis</button>
+                    <button class="med-btn" data-med="Miebo">Miebo</button>
+                    <button class="med-btn" data-med="Cequa">Cequa</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Patient Information</h2>
+                <div class="patient-inputs">
+                    <input type="text" id="patientName" placeholder="Patient Name">
+                </div>
+                
+                <h2 style="margin-top: 20px;">Custom Medication</h2>
+                <div class="custom-med">
+                    <input type="text" id="customMedInput" placeholder="Enter medication name">
+                    <button class="med-btn" id="addCustomBtn">Add</button>
+                </div>
+                
+                <h2 style="margin-top: 20px;">Quick Templates</h2>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button class="med-btn template-btn" data-template="postop">Post-Op Cataract</button>
+                    <button class="med-btn template-btn" data-template="combodrop">Combo Drop</button>
+                    <button class="med-btn template-btn" data-template="postoptaper">Post-Op Cataract Taper</button>
+                    <button class="med-btn template-btn" data-template="combodroptaper">Combo Drop Taper</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 5px;">
+                    <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #2c3e50;">How to Print</h3>
+                    <p style="margin: 0; font-size: 13px;"><strong>Press Ctrl+P</strong> (PC) or <strong>Cmd+P</strong> (Mac) to print the eye drop list below.</p>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">To clear: Refresh the page</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="instructions-box">
+            <h3>How to Print</h3>
+            <p>Press <strong>Ctrl+P</strong> (PC) or <strong>Cmd+P</strong> (Mac) to print the eye drop instructions below.</p>
+        </div>
+        
+        <div class="output-section">
+            <h2>Eye Drop Instructions</h2>
+            <div class="patient-info-display" id="patientDisplay"></div>
+            
+            <table id="medTable">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Medication</th>
+                        <th style="width: 25%;">Right Eye (OD)</th>
+                        <th style="width: 25%;">Left Eye (OS)</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="4" class="empty-message">No medications added yet. Select medications above to get started.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Medication</h2>
+                <div class="selected-med" id="modalMedName"></div>
+            </div>
+            
+            <div class="modal-section" id="modalEyeSection">
+                <h3>Select Eye:</h3>
+                <div class="modal-buttons">
+                    <button class="med-btn" id="modalRightEye">Right Eye (OD)</button>
+                    <button class="med-btn" id="modalLeftEye">Left Eye (OS)</button>
+                    <button class="med-btn" id="modalBothEyes">Both Eyes (OU)</button>
+                </div>
+            </div>
+            
+            <div class="modal-section" id="modalFreqSection" style="display: none;">
+                <h3>Select Frequency:</h3>
+                <div class="modal-buttons freq">
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop once daily">Once daily</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop twice daily">Twice daily</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop three times daily">Three times daily</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop four times daily">Four times daily</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop every hour">Every hour</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop every 2 hours">Every 2 hours</button>
+                    <button class="med-btn modal-freq-btn" data-freq="1 drop at bedtime">At bedtime</button>
+                    <button class="med-btn modal-freq-btn" data-freq="As needed">As needed</button>
+                    <button class="med-btn modal-freq-btn" data-freq="Stop">Stop</button>
+                </div>
+            </div>
+            
+            <button class="med-btn modal-close" id="modalClose">Cancel</button>
+        </div>
+    </div>
+    
+    <script>
+        let selectedMed = null;
+        let selectedEye = null;
+        let isTemplate = false;
+        
+        document.querySelectorAll('.med-btn[data-med]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!this.classList.contains('template-btn')) {
+                    selectedMed = this.dataset.med;
+                    isTemplate = false;
+                    openModal(selectedMed);
+                }
+            });
+        });
+        
+        function openModal(medName) {
+            document.getElementById('modalMedName').textContent = medName;
+            document.getElementById('modalOverlay').classList.add('show');
+            document.getElementById('modalFreqSection').style.display = 'none';
+            document.querySelectorAll('.modal-buttons .med-btn').forEach(b => b.classList.remove('active'));
+            selectedEye = null;
+            
+            // Reset eye button event listeners for normal medications
+            if (!isTemplate) {
+                const re = document.getElementById('modalRightEye');
+                const le = document.getElementById('modalLeftEye');
+                const be = document.getElementById('modalBothEyes');
+                
+                const newRe = re.cloneNode(true);
+                const newLe = le.cloneNode(true);
+                const newBe = be.cloneNode(true);
+                
+                re.parentNode.replaceChild(newRe, re);
+                le.parentNode.replaceChild(newLe, le);
+                be.parentNode.replaceChild(newBe, be);
+                
+                document.getElementById('modalRightEye').addEventListener('click', function() {
+                    selectedEye = 'Right Eye (OD)';
+                    document.querySelectorAll('#modalEyeSection .med-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('modalFreqSection').style.display = 'block';
+                });
+                
+                document.getElementById('modalLeftEye').addEventListener('click', function() {
+                    selectedEye = 'Left Eye (OS)';
+                    document.querySelectorAll('#modalEyeSection .med-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('modalFreqSection').style.display = 'block';
+                });
+                
+                document.getElementById('modalBothEyes').addEventListener('click', function() {
+                    selectedEye = 'Both Eyes (OU)';
+                    document.querySelectorAll('#modalEyeSection .med-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('modalFreqSection').style.display = 'block';
+                });
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+            selectedMed = null;
+            selectedEye = null;
+            isTemplate = false;
+        }
+        
+        document.getElementById('modalClose').addEventListener('click', closeModal);
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+        
+        document.querySelectorAll('.modal-freq-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const freq = this.dataset.freq;
+                addToTable(selectedMed, selectedEye, freq);
+                closeModal();
+            });
+        });
+        
+        document.getElementById('addCustomBtn').addEventListener('click', function() {
+            const customMed = document.getElementById('customMedInput').value.trim();
+            if (customMed) {
+                selectedMed = customMed;
+                isTemplate = false;
+                document.getElementById('customMedInput').value = '';
+                openModal(customMed);
+            }
+        });
+        
+        document.querySelectorAll('.template-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                isTemplate = true;
+                const template = this.dataset.template;
+                if (template === 'postop') {
+                    selectedMed = 'Post-Op Cataract';
+                    openTemplateModal('postop');
+                } else if (template === 'combodrop') {
+                    selectedMed = 'Combo Drop';
+                    openComboDropModal();
+                } else if (template === 'postoptaper' || template === 'combodroptaper') {
+                    selectedMed = template === 'postoptaper' ? 'Post-Op Cataract Taper' : 'Combo Drop Taper';
+                    openTemplateModal(template);
+                }
+            });
+        });
+        
+        function openTemplateModal(template) {
+            document.getElementById('modalMedName').textContent = selectedMed;
+            document.getElementById('modalOverlay').classList.add('show');
+            document.getElementById('modalFreqSection').style.display = 'none';
+            document.querySelectorAll('.modal-buttons .med-btn').forEach(b => b.classList.remove('active'));
+            
+            const re = document.getElementById('modalRightEye');
+            const le = document.getElementById('modalLeftEye');
+            const be = document.getElementById('modalBothEyes');
+            
+            const newRe = re.cloneNode(true);
+            const newLe = le.cloneNode(true);
+            const newBe = be.cloneNode(true);
+            
+            re.parentNode.replaceChild(newRe, re);
+            le.parentNode.replaceChild(newLe, le);
+            be.parentNode.replaceChild(newBe, be);
+            
+            document.getElementById('modalRightEye').addEventListener('click', function() {
+                loadTemplate(template, 'right');
+                closeModal();
+            });
+            
+            document.getElementById('modalLeftEye').addEventListener('click', function() {
+                loadTemplate(template, 'left');
+                closeModal();
+            });
+            
+            document.getElementById('modalBothEyes').addEventListener('click', function() {
+                loadTemplate(template, 'both');
+                closeModal();
+            });
+        }
+        
+        function openComboDropModal() {
+            document.getElementById('modalMedName').textContent = 'Combo Drop - Select Eye';
+            document.getElementById('modalOverlay').classList.add('show');
+            document.getElementById('modalFreqSection').style.display = 'none';
+            document.querySelectorAll('.modal-buttons .med-btn').forEach(b => b.classList.remove('active'));
+            
+            const re = document.getElementById('modalRightEye');
+            const le = document.getElementById('modalLeftEye');
+            const be = document.getElementById('modalBothEyes');
+            
+            const newRe = re.cloneNode(true);
+            const newLe = le.cloneNode(true);
+            const newBe = be.cloneNode(true);
+            
+            re.parentNode.replaceChild(newRe, re);
+            le.parentNode.replaceChild(newLe, le);
+            be.parentNode.replaceChild(newBe, be);
+            
+            document.getElementById('modalRightEye').addEventListener('click', function() {
+                addToTableDirect('Combo Drop', '1 drop four times daily', '');
+                closeModal();
+            });
+            
+            document.getElementById('modalLeftEye').addEventListener('click', function() {
+                addToTableDirect('Combo Drop', '', '1 drop four times daily');
+                closeModal();
+            });
+            
+            document.getElementById('modalBothEyes').addEventListener('click', function() {
+                addToTableDirect('Combo Drop', '1 drop four times daily', '1 drop four times daily');
+                closeModal();
+            });
+        }
+        
+        function loadTemplate(template, eye) {
+            const tbody = document.getElementById('tableBody');
+            if (tbody.querySelector('.empty-message')) tbody.innerHTML = '';
+            
+            const rightEye = (eye === 'right' || eye === 'both');
+            const leftEye = (eye === 'left' || eye === 'both');
+            
+            if (template === 'postop') {
+                addToTableDirect('Prednisolone Acetate 1%', rightEye ? '1 drop four times daily' : '', leftEye ? '1 drop four times daily' : '');
+                addToTableDirect('Moxifloxacin 0.5%', rightEye ? '1 drop four times daily' : '', leftEye ? '1 drop four times daily' : '');
+                addToTableDirect('Ketorolac 0.5%', rightEye ? '1 drop twice daily' : '', leftEye ? '1 drop twice daily' : '');
+            } else if (template === 'postoptaper') {
+                addToTableDirect('Prednisolone Acetate 1%', rightEye ? '3 times a day for 1 week, then 2 times a day for 1 week, then daily for 1 week, then stop' : '', leftEye ? '3 times a day for 1 week, then 2 times a day for 1 week, then daily for 1 week, then stop' : '');
+                addToTableDirect('Ketorolac 0.5%', rightEye ? '2 times a day for 3 weeks' : '', leftEye ? '2 times a day for 3 weeks' : '');
+                addToTableDirect('Ofloxacin', rightEye ? 'Stop' : '', leftEye ? 'Stop' : '');
+            } else if (template === 'combodroptaper') {
+                addToTableDirect('Combo Drop', rightEye ? '3 times a day for 1 week, then 2 times a day for 1 week, then daily for 1 week, then stop' : '', leftEye ? '3 times a day for 1 week, then 2 times a day for 1 week, then daily for 1 week, then stop' : '');
+            }
+            
+            updatePatientDisplay();
+        }
+        
+        function addToTable(med, eye, freq) {
+            const tbody = document.getElementById('tableBody');
+            if (tbody.querySelector('.empty-message')) tbody.innerHTML = '';
+            
+            let existingRow = null;
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const medCell = row.cells[0];
+                if (medCell && medCell.textContent === med) existingRow = row;
+            });
+            
+            if (existingRow) {
+                if (eye === 'Right Eye (OD)') existingRow.cells[1].textContent = freq;
+                else if (eye === 'Left Eye (OS)') existingRow.cells[2].textContent = freq;
+                else if (eye === 'Both Eyes (OU)') {
+                    existingRow.cells[1].textContent = freq;
+                    existingRow.cells[2].textContent = freq;
+                }
+            } else {
+                const row = document.createElement('tr');
+                const rightEyeFreq = (eye === 'Right Eye (OD)' || eye === 'Both Eyes (OU)') ? freq : '';
+                const leftEyeFreq = (eye === 'Left Eye (OS)' || eye === 'Both Eyes (OU)') ? freq : '';
+                
+                row.innerHTML = `
+                    <td contenteditable="true">${med}</td>
+                    <td contenteditable="true">${rightEyeFreq}</td>
+                    <td contenteditable="true">${leftEyeFreq}</td>
+                    <td><button class="delete-btn">Delete</button></td>
+                `;
+                
+                row.querySelector('.delete-btn').addEventListener('click', function() {
+                    row.remove();
+                    if (tbody.children.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="empty-message">No medications added yet. Select medications above to get started.</td></tr>';
+                    }
+                });
+                
+                tbody.appendChild(row);
+            }
+            
+            updatePatientDisplay();
+        }
+        
+        function addToTableDirect(med, rightFreq, leftFreq) {
+            const tbody = document.getElementById('tableBody');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td contenteditable="true">${med}</td>
+                <td contenteditable="true">${rightFreq}</td>
+                <td contenteditable="true">${leftFreq}</td>
+                <td><button class="delete-btn">Delete</button></td>
+            `;
+            
+            row.querySelector('.delete-btn').addEventListener('click', function() {
+                row.remove();
+                if (tbody.children.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-message">No medications added yet. Select medications above to get started.</td></tr>';
+                }
+            });
+            
+            tbody.appendChild(row);
+        }
+        
+        function updatePatientDisplay() {
+            const name = document.getElementById('patientName').value;
+            let html = '';
+            if (name) html += `<p><strong>Patient:</strong> ${name}</p>`;
+            document.getElementById('patientDisplay').innerHTML = html;
+        }
+        
+        document.getElementById('patientName').addEventListener('input', updatePatientDisplay);
+        
+        function clearAllData() {
+            if (confirm('Clear all data?')) {
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="4" class="empty-message">No medications added yet. Select medications above to get started.</td></tr>';
+                document.getElementById('patientName').value = '';
+                document.getElementById('patientDisplay').innerHTML = '';
+            }
+        }
+        
+        function copyToClipboard() {
+            updatePatientDisplay();
+            
+            let text = '';
+            const name = document.getElementById('patientName').value;
+            if (name) text += `Patient: ${name}\n`;
+            
+            text += '\nEYE DROP INSTRUCTIONS\n';
+            text += '='.repeat(50) + '\n\n';
+            
+            const rows = document.querySelectorAll('#tableBody tr');
+            rows.forEach(row => {
+                if (!row.querySelector('.empty-message')) {
+                    const cells = row.querySelectorAll('td');
+                    const med = cells[0].textContent;
+                    const rightEye = cells[1].textContent.trim();
+                    const leftEye = cells[2].textContent.trim();
+                    
+                    text += `${med}\n`;
+                    if (rightEye) text += `   Right Eye (OD): ${rightEye}\n`;
+                    if (leftEye) text += `   Left Eye (OS): ${leftEye}\n`;
+                    text += '\n';
+                }
+            });
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Eye drop list copied to clipboard!\n\nNow paste it into Word, Google Docs, or any word processor and print from there for a clean printout.');
+            }).catch(() => {
+                alert('Failed to copy. Please try again.');
+            });
+        }
+        
+        function openPrintPreview() {
+            updatePatientDisplay();
+            
+            const patientName = document.getElementById('patientName').value;
+            let patientInfo = '';
+            if (patientName) patientInfo = `<p><strong>Patient:</strong> ${patientName}</p>`;
+            
+            const rows = document.querySelectorAll('#tableBody tr');
+            let tableRows = '';
+            
+            rows.forEach(row => {
+                if (!row.querySelector('.empty-message')) {
+                    const cells = row.querySelectorAll('td');
+                    tableRows += `<tr><td>${cells[0].textContent}</td><td>${cells[1].textContent}</td><td>${cells[2].textContent}</td></tr>`;
+                }
+            });
+            
+            if (!tableRows) {
+                alert('Please add medications to the table before printing.');
+                return;
+            }
+            
+            const tableHTML = `<table><thead><tr><th>Medication</th><th>Right Eye (OD)</th><th>Left Eye (OS)</th></tr></thead><tbody>${tableRows}</tbody></table>`;
+            
+            const printWindow = window.open('', '_blank');
+            
+            if (!printWindow) {
+                alert('Pop-ups are blocked. Please allow pop-ups for this site.\n\nAlternatively, use the "Copy to Clipboard" button.');
+                return;
+            }
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Eye Drop List</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+                        h1 { color: #2c3e50; font-size: 24px; margin-bottom: 20px; }
+                        .patient-info { margin-bottom: 20px; }
+                        .patient-info p { margin: 5px 0; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                        table th, table td { border: 1px solid #000; padding: 10px; text-align: left; }
+                        table th { background-color: #f0f0f0; }
+                        .print-btn { padding: 10px 20px; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 20px 0; }
+                        .print-btn:hover { background-color: #2980b9; }
+                        @media print { .print-btn { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <h1>Eye Drop Instructions</h1>
+                    <div class="patient-info">${patientInfo}</div>
+                    ${tableHTML}
+                    <button class="print-btn" onclick="window.print()">Print This Page</button>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }
+    </script>
+</body>
+</html>
